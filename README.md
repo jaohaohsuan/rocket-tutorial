@@ -22,35 +22,44 @@ CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags '-w' .
 ```
 
 ```
+mkdir -p hello/rootfs/bin
+```
+
+```
+mkdir hello
+```
+
+```
+vim manifest
+```
+
+```
 {
-    "acVersion": "1.0.0",
-    "acKind": "AppManifest",
-    "name": "coreos.com/hello-1.0.0",
-    "os": "linux",
-    "arch": "amd64",
-    "exec": [
-        "/bin/hello"
+    "acVersion": "0.8.7",
+    "acKind": "ImageManifest",
+    "name": "coreos.com/hello",
+    "labels": [
+      { "name": "arch", "value": "amd64" },
+      { "name": "os", "value": "linux" },
+      { "name": "version", "value": "v1.0.0" }
     ],
-    "ports": [
-        {
-            "name": "www",
-            "protocol": "tcp",
-            "port": 5000
-        }
-    ],
-    "annotations": {
-        "authors": "Kelsey Hightower <kelsey.hightower@gmail.com>"
+    "app": {
+      "exec": [ "/bin/hello" ],
+      "user": "0",
+      "group": "0",
+      "ports": [
+         {
+          "name": "www",
+          "protocol": "tcp",
+          "port": 5000
+         }
+       ]
     }
 }
 ```
 
 ```
-actool validate manifest.json
-```
-
-```
-mkdir rootfs
-mkdir rootfs/bin
+actool validate manifest
 ```
 
 ```
@@ -58,7 +67,7 @@ cp hello rootfs/bin/
 ```
 
 ```
-actool build --app-manifest manifest.json rootfs hello.aci
+actool build `pwd` rootfs /tmp/hello.aci
 ```
 
 ```
@@ -68,7 +77,7 @@ actool validate hello.aci
 ### Launch a local application image
 
 ```
-rkt run hello.aci
+sudo rkt --net=host --insecure-options=image run /tmp/hello.aci
 ```
 
 ### Testing with curl
